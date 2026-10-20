@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Activa: Abstracción | Sistema Shyplay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="pagina-app">
+
+<!-- Barra superior -->
+<header class="barra">
+    <div class="marca">
+        <a class="marca-logo" href="dashboard.html">
+        <span class="marca-icono" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#e6f5fb"/><path fill="#15a0cc" d="M12 38c0-1.4.8-2.6 2-3.1l9.2-3c.8-.3 1.6.1 2.1.8l2.4 3.4 8.4-7.1c1.4-1.2 3.5-.4 3.8 1.4l.3 1.4-6.8 6 5 2.4c1.6.8 2 2.7 1 4.1L32 55.2c-2.4 3.2-7 4.4-10.8 2.6l-7.6-3.6c-1-.5-1.6-1.4-1.6-2.4V38z"/></svg>
+        </span>
+            LOGO
+        </a>
+        <span class="marca-divisor" aria-hidden="true"></span>
+        <p class="marca-empresa">NOMBRE DE EMPRESA</p>
+    </div>
+    <div class="aspirante">
+        <div>
+            <span class="aspirante-etiqueta">ASPIRANTE:</span>
+            <strong class="aspirante-nombre" id="aspirante-nombre">Juan Pérez (ID: 12345)</strong>
+        </div>
+    </div>
+</header>
+
+<div class="layout">
+    <!-- Menú lateral de navegación -->
+    <nav class="menu" aria-label="Principal">
+        <a href="dashboard.html">Inicio</a>
+        <a class="activo" href="pruebas.html">Pruebas</a>
+        <a href="resultados.html">Resultados</a>
+        <a href="contacto.html">Contacto</a>
+    </nav>
+
+    <!-- Contenido principal de Abstracción -->
+    <main class="contenido">
+        <section class="banner" data-servicio="pruebas.activa">
+            <h1 class="banner-titulo" id="titulo-prueba">PRUEBA ACTIVA: Abstracción (SHIPLEY-2)</h1>
+            <div class="banner-tiempo">
+                <div>
+                    <span>Tiempo restante:</span>
+                    <strong id="tiempo">09:58</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel panel-prueba">
+            <p class="insignia" id="contador">Pregunta 1 de 25</p>
+            <p class="instrucciones" id="instrucciones">
+                <strong>Instrucciones:</strong> Analiza la serie y escribe la letra, número o palabra que falta.
+            </p>
+
+            <!-- Contenedor unificado para la serie y el input inline -->
+            <div class="contenedor-reactivo-inline" style="text-align: center; margin: 40px 0;">
+                <span id="enunciado-serie" style="font-size: 1.5rem; font-weight: 700; color: #0c74a0; letter-spacing: 2px;">Cargando serie...</span>
+                <!-- Input integrado en línea con estilo de guion bajo o cajita sutil -->
+                <input type="text" id="input-respuesta" class="input-inline" autocomplete="off" placeholder="" autofocus>
+            </div>
+
+            <div style="margin-top: 28px; display: flex; justify-content: flex-end;">
+                <button type="button" class="boton" id="btn-siguiente">Siguiente</button>
+            </div>
+
+            <div class="cierre" id="cierre" hidden>
+                <h2>Prueba completada</h2>
+                <p>Respondiste las 25 preguntas de Abstraccion.</p>
+                <a class="boton" href="pruebas.html">Ir al catalogo de pruebas</a>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Scripts del sistema -->
+<script src="js/comun.js"></script>
+<script src="js/test_abstraccion.js"></script>
+</body>
+</html>
