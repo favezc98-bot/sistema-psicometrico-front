@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 1. Consumir endpoint de preguntas de abstracción
   function cargarPreguntas() {
-    fetch("http://localhost:8080/api/preguntas_abstraccion")
+    fetch("https://sistema-psicometrico-back-7.onrender.com/api/preguntas_abstraccion")
       .then(function (respuesta) {
         if (!respuesta.ok) {
           throw new Error("No se pudieron cargar las preguntas del servidor.");
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 2. Consumir endpoint de respuestas de abstracción
   function cargarRespuestas() {
-    fetch("http://localhost:8080/api/respuestas_abstraccion")
+    fetch("https://sistema-psicometrico-back-7.onrender.com/api/respuestas_abstraccion")
       .then(function (respuesta) {
         if (!respuesta.ok) {
           throw new Error("No se pudieron cargar las respuestas del servidor.");

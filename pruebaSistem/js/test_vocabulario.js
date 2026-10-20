@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 1. Consumir el endpoint de preguntas al cargar la página
   function cargarPreguntas() {
-    fetch("http://localhost:8080/api/preguntas_vocabulario")
+    fetch("https://sistema-psicometrico-back-7.onrender.com/api/preguntas_vocabulario")
       .then(function (respuesta) {
         if (!respuesta.ok) {
           throw new Error("No se pudieron cargar las preguntas del servidor.");
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function cargarRespuestas() {
-    fetch("http://localhost:8080/api/respuestas_vocabulario")
+    fetch("https://sistema-psicometrico-back-7.onrender.com/api/respuestas_vocabulario")
       .then(function (respuesta) {
         if (!respuesta.ok) {
           throw new Error("No se pudieron cargar las respuestas del servidor.");
