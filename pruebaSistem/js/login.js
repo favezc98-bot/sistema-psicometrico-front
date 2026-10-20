@@ -25,7 +25,7 @@
     };
 
     //Consumir el endpoint backend con fetch
-    fetch("http://localhost:8080/api/login", {
+    fetch("https://sistema-psicometrico-back-7.onrender.com/api/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
