@@ -1,0 +1,111 @@
+/* Estilos específicos para la visualización de Bloques */
+.contenedor-pregunta-bloque {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto;
+    text-align: center;
+    width: 100%;
+}
+
+.imagen-patron-bloque {
+    width: auto;
+    max-width: 80%;
+    max-height: 320px;
+    object-fit: contain;
+    border: 2px solid #d0d0d0;
+    border-radius: 12px;
+    padding: 14px;
+    background-color: #ffffff;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.opciones-grid-bloques {
+    display: flex;
+    flex-direction: row; /* Forzar orden horizontal en fila */
+    flex-wrap: nowrap;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25px;
+    width: 100%;
+}
+
+.tarjeta-opcion-bloque {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    background-color: #fafafa;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    width: 90px; /* Ancho fijo para mantener simetría perfecta en filas */
+    flex-shrink: 0;
+}
+
+.tarjeta-opcion-bloque:hover {
+    border-color: #15a0cc;
+    background-color: #f0f9fc;
+}
+
+.tarjeta-opcion-bloque input[type="radio"] {
+    margin-bottom: 6px;
+    accent-color: #15a0cc;
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+.tarjeta-opcion-bloque .letra-opcion {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.tarjeta-opcion-bloque img {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 4px;
+}
+
+/* Contenedor principal de cada subsección de selección */
+.bloque-subseccion {
+    width: 100%;
+    max-width: 680px;
+    margin: 14px auto;
+    padding: 16px;
+    background-color: #f8fbfd;
+    border: 2px solid #cce6f0;
+    border-radius: 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+}
+
+/* Encabezado para diferenciar cada cuadro gris */
+.bloque-subseccion-titulo {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #0c6680;
+    background-color: #e6f5fb;
+    padding: 6px 14px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    text-align: center;
+    border-left: 5px solid #15a0cc;
+}
+
+/* GRID DE OPCIONES: Ahora permite saltos de línea automáticos y simétricos (sin scroll) */
+.opciones-grid-bloques {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap; /* Clave: Permite pasar a la siguiente fila si hay muchas opciones (4 y 4, 6 y 6) */
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
