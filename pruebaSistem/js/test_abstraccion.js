@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
   var respuestas = [];
   var listaPreguntas = [];
   var listaRespuestas = [];
-  var restante = 600; // 10 minutos (600 segundos)
 
   var contador = document.getElementById("contador");
   var enunciadoSerie = document.getElementById("enunciado-serie"); // Texto de la serie
@@ -11,8 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
   var contenedorReactivo = document.querySelector(".contenedor-reactivo-inline"); // Contenedor general
   var instrucciones = document.getElementById("instrucciones");
   var cierre = document.getElementById("cierre");
-  var tiempo = document.getElementById("tiempo");
-  var cajaTiempo = document.querySelector(".banner-tiempo");
   var btnSiguiente = document.getElementById("btn-siguiente");
 
   // 1. Consumir endpoint de preguntas de abstracción
@@ -58,12 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function iniciarPrueba() {
-    // Recuperar tiempo, índice y respuestas de sessionStorage
-    var tiempoGuardado = sessionStorage.getItem("shyplay_abstraccion_tiempo_restante");
-    if (tiempoGuardado !== null) {
-      restante = parseInt(tiempoGuardado, 10);
-    }
-
+    // Recuperar índice y respuestas de sessionStorage (Ya sin tiempo local)
     var indiceGuardado = sessionStorage.getItem("shyplay_abstraccion_indice_actual");
     if (indiceGuardado !== null) {
       indice = parseInt(indiceGuardado, 10);
@@ -79,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     pintar();
-    avanzarTiempo();
+    // (Se eliminó avanzarTiempo de aquí)
   }
 
   // 3. Avance mediante el botón Siguiente
@@ -158,24 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (contador) contador.textContent = "Prueba completada";
   }
 
-  function pintarTiempo() {
-    var minutos = String(Math.floor(restante / 60)).padStart(2, "0");
-    var segundos = String(restante % 60).padStart(2, "0");
-    if (tiempo) tiempo.textContent = minutos + ":" + segundos;
-  }
-
-  function avanzarTiempo() {
-    pintarTiempo();
-    sessionStorage.setItem("shyplay_abstraccion_tiempo_restante", restante);
-
-    if (restante <= 0) {
-      if (cajaTiempo) cajaTiempo.classList.add("agotado");
-      finalizar();
-      return;
-    }
-    restante -= 1;
-    window.setTimeout(avanzarTiempo, 1000);
-  }
+  // (Funciones pintarTiempo y avanzarTiempo eliminadas por completo)
 
   // 5. Protección ante refrescos o recargas accidentales
   window.addEventListener("beforeunload", function (evento) {
