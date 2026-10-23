@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Evaluador | Sistema Shyplay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="pagina-app">
+<header class="barra">
+    <div class="marca">
+        <a class="marca-logo" href="evaluador.html">
+        <span class="marca-icono" aria-hidden="true">
+          <svg viewBox="0 0 64 64">
+            <rect width="64" height="64" rx="16" fill="#e6f5fb"/>
+            <path fill="#15a0cc" d="M12 38c0-1.4.8-2.6 2-3.1l9.2-3c.8-.3 1.6.1 2.1.8l2.4 3.4 8.4-7.1c1.4-1.2 3.5-.4 3.8 1.4l.3 1.4-6.8 6 5 2.4c1.6.8 2 2.7 1 4.1L32 55.2c-2.4 3.2-7 4.4-10.8 2.6l-7.6-3.6c-1-.5-1.6-1.4-1.6-2.4V38z"/>
+            <path fill="#0c74a0" d="M46 22c1.8.4 3.1 1.8 3.3 3.6l1.2 8.6c.3 1.8-1.1 3.4-2.9 3.4l-5.2.2 2 5c.7 1.6-.2 3.5-2 3.9l-3.4.8 1.5-5.6-4.6-2.6 3.7-4.6 3 1.3-.7-5.2c-.3-2 .8-3.9 2.8-4.5l1.3-.3z"/>
+          </svg>
+        </span>
+            LOGO
+        </a>
+        <span class="marca-divisor" aria-hidden="true"></span>
+        <p class="marca-empresa">PANEL DE EVALUADOR</p>
+    </div>
+    <div class="aspirante">
+        <div>
+            <span class="aspirante-etiqueta">EVALUADOR:</span>
+            <strong class="aspirante-nombre" id="evaluador-nombre">Admin (ID: 1)</strong>
+        </div>
+    </div>
+</header>
+
+<div class="layout">
+    <nav class="menu" aria-label="Principal">
+        <a class="activo" href="evaluador.html">
+            <svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"></path></svg>
+            Inicio
+        </a>
+        <a href="resultados.html">
+            <svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 16v3M12 11v8M16 14v5"></path></svg>
+            Resultados
+        </a>
+    </nav>
+
+    <main class="contenido">
+        <h1 class="titulo-pagina">Asignación de Pruebas</h1>
+        <p class="subtitulo">Busca al candidato y selecciona la combinación de test que se le aplicará.</p>
+
+        <!--SECCIoN DE BUSQUEDA DE CANDIDATO -->
+        <section class="panel" style="margin-top: 20px; padding: 30px;">
+            <h2>1. Buscar Candidato</h2>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="email" id="input-correo-buscar" class="input-control" placeholder="Ingrese el correo del candidato..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                <button type="button" id="btn-buscar-candidato" class="boton" style="padding: 10px 20px;">Buscar</button>
+            </div>
+
+            <!-- Contenedor donde se mostrará la info del candidato una vez encontrado -->
+            <div id="info-candidato" style="margin-top: 20px; padding: 15px; background: #f4f6f8; border-radius: 8px; display: none;">
+                <p><strong>Candidato encontrado:</strong> <span id="lbl-nombre-candidato"></span></p>
+                <p><strong>Correo:</strong> <span id="lbl-correo-candidato"></span></p>
+                <input type="hidden" id="id-candidato-encontrado">
+            </div>
+        </section>
+
+        <!--SECCION DE CONFIGURAR BATERÍA (Oculta hasta que se encuentre al candidato) -->
+        <section id="seccion-bateria" class="panel" style="margin-top: 20px; padding: 30px; opacity: 0.5; pointer-events: none;">
+            <h2>2. Configurar Batería de Pruebas</h2>
+            <form id="form-asignar-prueba" style="margin-top: 20px;">
+                <div style="margin-bottom: 20px;">
+                    <label for="select-bateria" style="display: block; margin-bottom: 8px; font-weight: 600;">Seleccione la combinación:</label>
+                    <select id="select-bateria" class="input-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                        <option value="AB">Test A + B (Vocabulario + Abstracción)</option>
+                        <option value="BC">Test B + C (Abstracción + Bloques)</option>
+                    </select>
+                </div>
+                <button type="submit" class="boton">Asignar y Guardar</button>
+            </form>
+        </section>
+    </main>
+</div>
+<script src="js/comun.js"></script>
+<script src="js/evaluador.js"></script>
+</body>
+</html>
