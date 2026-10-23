@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Psicométrica | Sistema Shyplay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/estilos_bloque.css">
+</head>
+<body class="pagina-app">
+
+<header class="barra">
+    <div class="marca">
+        <a class="marca-logo" href="#">
+        <span class="marca-icono" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#e6f5fb"/><path fill="#15a0cc" d="M12 38c0-1.4.8-2.6 2-3.1l9.2-3c.8-.3 1.6.1 2.1.8l2.4 3.4 8.4-7.1c1.4-1.2 3.5-.4 3.8 1.4l.3 1.4-6.8 6 5 2.4c1.6.8 2 2.7 1 4.1L32 55.2c-2.4 3.2-7 4.4-10.8 2.6l-7.6-3.6c-1-.5-1.6-1.4-1.6-2.4V38z"/></svg>
+        </span>
+            LOGO
+        </a>
+        <span class="marca-divisor" aria-hidden="true"></span>
+        <p class="marca-empresa">NOMBRE DE EMPRESA</p>
+    </div>
+    <div class="aspirante">
+        <div>
+            <span class="aspirante-etiqueta">ASPIRANTE:</span>
+            <strong class="aspirante-nombre" id="aspirante-nombre">Juan Pérez (ID: 12345)</strong>
+        </div>
+    </div>
+</header>
+
+<!-- Contenido principal centrado a pantalla completa (Sin barra lateral) -->
+<main class="contenido" style="max-width: 900px; margin: 30px auto; padding: 0 20px; float: none; width: 100%;">
+    <section class="banner" data-servicio="pruebas.activa">
+        <h1 class="banner-titulo" id="titulo-prueba">PRUEBA ACTIVA: Batería Unificada</h1>
+        <div class="banner-tiempo">
+            <div>
+                <span>Tiempo restante:</span>
+                <strong id="tiempo">25:00</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel panel-prueba">
+        <p class="instrucciones" id="instrucciones">
+            <strong>Instrucciones:</strong> Responde cada reactivo con atención. La prueba avanza de forma continua.
+        </p>
+
+        <!-- Contenedor Vocabulario -->
+        <div id="seccion-vocabulario" class="seccion-test" style="display:none;">
+            <h2 class="pregunta-texto" id="enunciado">Cargando vocabulario...</h2>
+            <div class="opciones" id="opciones"></div>
+        </div>
+
+        <!-- Contenedor Abstracción -->
+        <div id="seccion-abstraccion" class="seccion-test" style="display:none;">
+            <div class="contenedor-reactivo-inline" style="text-align: center; margin: 40px 0;">
+                <span id="enunciado-serie" style="font-size: 1.5rem; font-weight: 700; color: #0c74a0; letter-spacing: 2px;">Cargando serie...</span>
+                <input type="text" id="input-respuesta" class="input-inline" autocomplete="off" placeholder="" autofocus>
+            </div>
+        </div>
+
+        <!-- Contenedor Bloques -->
+        <div id="seccion-bloques" class="seccion-test" style="display:none;">
+            <div class="contenedor-pregunta-bloque" id="contenedor-pregunta">
+                <p>Cargando bloques...</p>
+            </div>
+            <div id="opciones-bloques"></div>
+        </div>
+
+        <div style="margin-top: 28px; display: flex; justify-content: flex-end;">
+            <button type="button" class="boton" id="btn-siguiente">Siguiente</button>
+        </div>
+
+        <div class="cierre" id="cierre" hidden>
+            <h2>Prueba completada</h2>
+            <p>Has finalizado la batería psicométrica exitosamente.</p>
+            <a class="boton" href="dashboard.html">Ir al inicio</a>
+        </div>
+    </section>
+</main>
+
+<!--<script src="js/comun.js"></script>-->
+<script src="js/cronometro_global.js"></script>
+<script src="js/coordinador_test.js"></script>
+</body>
+</html>

@@ -41,19 +41,28 @@
     .then(function (data) {
       //Evaluar la respuesta del backend {"status": "success", "mensaje": "Acceso concedido"}
       if (data.status === "success") {
-        // Guardamos la sesión activa
-        sessionStorage.setItem("shyplay_sesion", JSON.stringify({
-          usuario: usuario,
-          mensaje: data.mensaje
-        }));
+              // Guardamos la sesión activa incluyendo el idUsuario y el idRol
+              sessionStorage.setItem("shyplay_sesion", JSON.stringify({
+                idUsuario: data.idUsuario,
+                idRol: data.idRol,
+                usuario: usuario,
+                mensaje: data.mensaje
+              }));
 
-        // Redirigimos al inicio
-        window.location.href = "inicio.html";
-      } else {
-        // Si las credenciales fueron incorrectas
-        error.hidden = false;
-        error.textContent = data.mensaje || "Usuario o contraseña incorrectos.";
-      }
+              // Redirigir según el rol
+              if (data.idRol === 1) {
+                // Es EVALUADOR -> Mandarlo al panel de control del evaluador
+                window.location.href = "evaluador.html";
+              } else {
+                // Es CANDIDATO/USUARIO -> Mandarlo a la pantalla de inicio del test
+                window.location.href = "inicio.html";
+              }
+
+            } else {
+              // Si las credenciales fueron incorrectas
+              error.hidden = false;
+              error.textContent = data.mensaje || "Usuario o contraseña incorrectos.";
+            }
     })
     .catch(function (err) {
       // 6. Manejo de error si el servidor está apagado o hay problema de red/CORS
