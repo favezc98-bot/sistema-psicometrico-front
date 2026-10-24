@@ -75,21 +75,45 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Consultar la combinación activa en la BD
-      const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/combinacion-activa?id_candidato=${idCandidatoReal}`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.encontrado && data.combinacion) {
-          combinacionActiva = data.combinacion.trim().toUpperCase();
-        }
-      }
-    } catch (e) {
-      console.error("Error al sincronizar con el servidor:", e);
-      idCandidatoReal = sesion.idCandidato || 1;
-      CLAVE_INDICE = "shyplay_bateria_indice_" + idCandidatoReal;
-      CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_" + idCandidatoReal;
-      window.indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
-      respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
-    }
+            const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/combinacion-activa?id_candidato=${idCandidatoReal}`);
+            var idEvaluacionActiva = null;
+
+            if (response.ok) {
+              const data = await response.json();
+              if (data.encontrado && data.combinacion) {
+                combinacionActiva = data.combinacion.trim().toUpperCase();
+                // Capturar el ID de la evaluación si el backend lo devuelve
+                if (data.id_evaluacion || data.idEvaluacion) {
+                  idEvaluacionActiva = data.id_evaluacion || data.idEvaluacion;
+                }
+              }
+            }
+
+            // Si por alguna razón no viene el ID de evaluación, generamos un identificador por candidato
+            if (!idEvaluacionActiva) {
+              idEvaluacionActiva = idCandidatoReal;
+            }
+
+            // Configurar llaves ÚNICAS por EVALUACIÓN
+            CLAVE_INDICE = "shyplay_bateria_indice_eval_" + idEvaluacionActiva;
+            CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_eval_" + idEvaluacionActiva;
+            window.CLAVE_TIEMPO_EVAL = "shyplay_bateria_tiempo_eval_" + idEvaluacionActiva;
+
+            // Cargar progreso previo de esta evaluación específica
+            window.indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
+            respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
+
+          } catch (e) {
+            console.error("Error al sincronizar con el servidor:", e);
+            idCandidatoReal = sesion.idCandidato || 1;
+
+            CLAVE_INDICE = "shyplay_bateria_indice_eval_" + idCandidatoReal;
+            CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_eval_" + idCandidatoReal;
+            window.CLAVE_TIEMPO_EVAL = "shyplay_bateria_tiempo_eval_" + idCandidatoReal;
+
+            window.indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
+            respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
+          }
 
     if (combinacionActiva.includes("AB") || combinacionActiva.includes("A")) {
       combinacionActiva = "AB";
@@ -425,10 +449,10 @@ document.addEventListener("DOMContentLoaded", function () {
       sessionStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
       localStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
 
-      // Limpiar avance temporal
-      localStorage.removeItem(CLAVE_INDICE);
-      localStorage.removeItem(CLAVE_RESPUESTAS);
-      localStorage.removeItem("shyplay_bateria_tiempo_" + idCandidatoReal);
+      // Limpiar avance temporal de esta evaluación específica
+            localStorage.removeItem(CLAVE_INDICE);
+            localStorage.removeItem(CLAVE_RESPUESTAS);
+            localStorage.removeItem(window.CLAVE_TIEMPO_EVAL);
 
       // Alerta limpia y redirección inmediata al login
       alert("¡Prueba finalizada con éxito! Tus respuestas han sido guardadas.");
