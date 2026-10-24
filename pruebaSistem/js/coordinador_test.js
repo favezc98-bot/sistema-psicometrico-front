@@ -376,7 +376,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mostrarCargando(true);
 
         try {
-          // 1. Obtener el correo del candidato desde la sesión actual
+          //Obtener el correo del candidato desde la sesión actual
           var correoCandidato = sesion.usuario || sesion.correo;
 
           if (!correoCandidato) {
@@ -385,7 +385,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           console.log("-> Buscando ID de candidato en la BD para el correo:", correoCandidato);
 
-          // 2. Consultar la API de búsqueda para obtener el id_candidato real (ej. ID 1)
+          //Consultar la API de búsqueda para obtener el id_candidato real (ej. ID 1)
           const resBusqueda = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/buscar?correo=${encodeURIComponent(correoCandidato)}`);
           const dataBusqueda = await resBusqueda.json();
 
@@ -400,7 +400,7 @@ document.addEventListener("DOMContentLoaded", function () {
           var CLAVE_INDICE = "shyplay_bateria_indice_" + idCandidatoReal;
           var CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_" + idCandidatoReal;
 
-          // 3. Consultar la combinación activa usando el id_candidato real
+          //Consultar la combinación activa usando el id_candidato real
           console.log("-> Consultando combinación activa para id_candidato:", idCandidatoReal);
           const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/combinacion-activa?id_candidato=${idCandidatoReal}`);
 
