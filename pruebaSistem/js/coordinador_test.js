@@ -380,25 +380,23 @@ document.addEventListener("DOMContentLoaded", function () {
       if (btnSiguiente) btnSiguiente.hidden = true;
       if (cierre) cierre.hidden = false;
 
-      //Empaquetar respuestas y enviar al backend
+      // Empaquetar respuestas idéntico al formato exitoso de Postman
       var respuestasPlanas = [];
       listaPreguntasGlobal.forEach((item, index) => {
         var resp = respuestasGlobales[index];
-        if (resp !== undefined && resp !== null) {
+        if (resp !== undefined && resp !== null && resp !== "") {
           if (typeof resp === 'object') {
             Object.keys(resp).forEach(subKey => {
               respuestasPlanas.push({
-                idCandidato: parseInt(idCandidatoReal),
-                idPreguntaTest: item.idPreguntaTest,
-                subParte: subKey,
+                idPreguntaTest: parseInt(item.idPreguntaTest),
+                subParte: subKey, // "sub_0", "sub_1"
                 respuestaSeleccionada: String(resp[subKey])
               });
             });
           } else {
             respuestasPlanas.push({
-              idCandidato: parseInt(idCandidatoReal),
-              idPreguntaTest: item.idPreguntaTest,
-              subParte: "sub_0",
+              idPreguntaTest: parseInt(item.idPreguntaTest),
+              subParte: "", // Vacío para preguntas simples o de vocabulario
               respuestaSeleccionada: String(resp)
             });
           }
@@ -406,7 +404,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       try {
-        await fetch("https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/guardar-respuestas", {
+        const res = await fetch("https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/guardar-respuestas", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -414,22 +412,25 @@ document.addEventListener("DOMContentLoaded", function () {
             respuestas: respuestasPlanas
           })
         });
+
+        const dataRes = await res.json();
+        console.log("Respuesta del servidor al guardar:", dataRes);
       } catch (err) {
         console.error("Error al enviar respuestas:", err);
       }
 
-      //Bloquear sesión permanentemente
+      // Bloquear sesión permanentemente
       sesion.bloqueado = true;
       sesion.mensaje = "Tu etapa ha terminado, un administrador se pondrá en contacto contigo hasta tu siguiente fase.";
       sessionStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
       localStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
 
-      //Limpiar avance temporal
+      // Limpiar avance temporal
       localStorage.removeItem(CLAVE_INDICE);
       localStorage.removeItem(CLAVE_RESPUESTAS);
       localStorage.removeItem("shyplay_bateria_tiempo_" + idCandidatoReal);
 
-      //Alerta limpia y redirección inmediata al login
+      // Alerta limpia y redirección inmediata al login
       alert("¡Prueba finalizada con éxito! Tus respuestas han sido guardadas.");
       window.location.href = "login.html";
     };
