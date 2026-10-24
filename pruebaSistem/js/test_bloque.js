@@ -1,3 +1,4 @@
+//Archivos que quiza ya no se ocupen
 document.addEventListener("DOMContentLoaded", function () {
   var indice = 0;
   var respuestas = [];
