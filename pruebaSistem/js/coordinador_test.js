@@ -370,22 +370,45 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Enviando respuestas finales al servidor...", respuestasGlobales);
   };
 
-  async function cargarCombinacionYArrancar() {
-    try {
-      const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/combinacion-activa?id_candidato=${idCandidato}`);
-      const data = await response.json();
+  // --- FUNCIÓN ASÍNCRONA CORREGIDA PARA OBTENER LA COMBINACIÓN OFICIAL ---
+    async function cargarCombinacionYArrancar() {
+      mostrarCargando(true);
 
-      if (data.encontrado && data.combinacion) {
-        combinacionActiva = data.combinacion.trim().toUpperCase();
-        sessionStorage.setItem("shyplay_bateria_combinacion", combinacionActiva);
+      try {
+        var idCandidato = sesion.idCandidato || sesion.idUsuario || 1;
+        console.log("-> Consultando combinación en BD para candidato ID:", idCandidato);
+
+        const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/combinacion-activa?id_candidato=${idCandidato}`);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("-> Respuesta API combinación:", data);
+
+          if (data.encontrado && data.combinacion) {
+            combinacionActiva = data.combinacion.trim().toUpperCase();
+            // Guardar combinación oficial en sessionStorage y localStorage
+            sessionStorage.setItem("shyplay_bateria_combinacion", combinacionActiva);
+            localStorage.setItem("shyplay_bateria_combinacion_" + idCandidato, combinacionActiva);
+          }
+        } else {
+          console.warn("-> No se pudo obtener combinación de BD, usando almacenamiento local.");
+        }
+      } catch (e) {
+        console.error("-> Error al conectar con endpoint de combinación, usando respaldo local:", e);
+        // Respaldo de seguridad
+        combinacionActiva = (
+          localStorage.getItem("shyplay_bateria_combinacion_" + (sesion.idCandidato || sesion.idUsuario)) ||
+          sessionStorage.getItem("shyplay_bateria_combinacion") ||
+          "AB"
+        ).trim().toUpperCase();
       }
-    } catch (e) {
-      console.error("Usando respaldo local:", e);
-      combinacionActiva = (sessionStorage.getItem("shyplay_bateria_combinacion") || "BC").trim().toUpperCase();
+
+      console.log("-> COMBINACIÓN DEFINITIVA A CARGAR:", combinacionActiva);
+
+      // Arrancamos la batería ÚNICAMENTE cuando ya tenemos la combinación confirmada
+      inicializarBateria();
     }
 
-    inicializarBateria();
-  }
-
-  cargarCombinacionYArrancar();
+    // ÚNICO PUNTO DE INICIO: Carga primero la combinación de la BD y luego arranca las preguntas
+    cargarCombinacionYArrancar();
 });
