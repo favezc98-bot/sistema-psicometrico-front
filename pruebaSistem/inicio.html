@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio | Sistema Shyplay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="pagina-app">
+  <header class="barra">
+    <div class="marca">
+      <a class="marca-logo" href="inicio.html">
+        <span class="marca-icono" aria-hidden="true">
+          <svg viewBox="0 0 64 64">
+            <rect width="64" height="64" rx="16" fill="#e6f5fb"/>
+            <path fill="#15a0cc" d="M12 38c0-1.4.8-2.6 2-3.1l9.2-3c.8-.3 1.6.1 2.1.8l2.4 3.4 8.4-7.1c1.4-1.2 3.5-.4 3.8 1.4l.3 1.4-6.8 6 5 2.4c1.6.8 2 2.7 1 4.1L32 55.2c-2.4 3.2-7 4.4-10.8 2.6l-7.6-3.6c-1-.5-1.6-1.4-1.6-2.4V38z"/>
+            <path fill="#0c74a0" d="M46 22c1.8.4 3.1 1.8 3.3 3.6l1.2 8.6c.3 1.8-1.1 3.4-2.9 3.4l-5.2.2 2 5c.7 1.6-.2 3.5-2 3.9l-3.4.8 1.5-5.6-4.6-2.6 3.7-4.6 3 1.3-.7-5.2c-.3-2 .8-3.9 2.8-4.5l1.3-.3z"/>
+          </svg>
+        </span>
+        LOGO
+      </a>
+      <span class="marca-divisor" aria-hidden="true"></span>
+      <p class="marca-empresa">NOMBRE DE EMPRESA</p>
+    </div>
+    <div class="aspirante">
+      <div>
+        <span class="aspirante-etiqueta">ASPIRANTE:</span>
+        <strong class="aspirante-nombre" id="aspirante-nombre">Juan Pérez (ID: 12345)</strong>
+      </div>
+      <span class="aspirante-avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"></circle><path d="M5.6 19.2c1.3-3.1 3.6-4.6 6.4-4.6s5.1 1.5 6.4 4.6"></path></svg>
+      </span>
+    </div>
+  </header>
+  <div class="layout">
+    <nav class="menu" aria-label="Principal">
+      <a class="activo" href="inicio.html" aria-current="page">
+        <svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"></path></svg>
+        Inicio
+      </a>
+      <a href="registro.html">
+        <svg viewBox="0 0 24 24"><rect x="6" y="3.5" width="12" height="17" rx="2"></rect><path d="M9 3.5h6v3H9zM9 11h6M9 15h4"></path></svg>
+        Registro
+      </a>
+      <a href="pruebas.html">
+        <svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 19v-6M12 19V8M16 19v-4"></path></svg>
+        Pruebas
+      </a>
+      <a href="resultados.html">
+        <svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 16v3M12 11v8M16 14v5"></path></svg>
+        Resultados
+      </a>
+    </nav>
+    <main class="contenido">
+      <h1 class="titulo-pagina">Inicio</h1>
+      <p class="subtitulo">Evaluaciones psicométricas para reclutamiento</p>
+      <section class="resumen" aria-label="Resumen">
+        <article class="tarjeta-mini">
+          <span>PRUEBA ACTIVA</span>
+          <strong id="resumen-pruebas">En curso</strong>
+        </article>
+        <article class="tarjeta-mini">
+          <span>OFERTAS ABIERTAS</span>
+          <strong>3</strong>
+        </article>
+        <article class="tarjeta-mini">
+          <span>RESULTADOS</span>
+          <strong id="resumen-resultados">0</strong>
+        </article>
+      </section>
+      <section class="panel panel-destacado">
+        <p class="insignia">Prueba activa</p>
+        <h2>Test de Personalidad (SHYPLAY)</h2>
+        <p id="nota-prueba-activa">Tienes una prueba en curso. Al elegir una respuesta, la siguiente pregunta se muestra sola.</p>
+        <a class="boton" id="boton-prueba-inicio" href="dashboard.html">Continuar</a>
+      </section>
+    </main>
+  </div>
+  <script src="js/comun.js"></script>
+</body>
+</html>
