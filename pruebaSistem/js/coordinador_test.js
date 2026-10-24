@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // 1. SEGURIDAD: Verificar que exista sesión activa y no esté bloqueado
-  var sesionStr = sessionStorage.getItem("shyplay_sesion");
+  // 1. SEGURIDAD: Verificar sesión activa
+  var sesionStr = sessionStorage.getItem("shyplay_sesion") || localStorage.getItem("shyplay_sesion");
   if (!sesionStr) {
     alert("Acceso denegado. Debes iniciar sesión primero.");
     window.location.href = "login.html";
@@ -11,19 +11,26 @@ document.addEventListener("DOMContentLoaded", function () {
   if (sesion.bloqueado) {
     alert(sesion.mensaje || "Tu etapa ha terminado, un administrador se pondrá en contacto contigo hasta tu siguiente fase.");
     sessionStorage.clear();
+    localStorage.removeItem("shyplay_sesion");
     window.location.href = "login.html";
     return;
   }
 
+  // Identificador único del candidato para persistencia en localStorage
+  var idCandidato = sesion.idCandidato || sesion.idUsuario || "1";
+  var CLAVE_INDICE = "shyplay_bateria_indice_" + idCandidato;
+  var CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_" + idCandidato;
+
   // Pintar nombre del aspirante en la barra superior
   var contadorGlobal = document.getElementById("aspirante-nombre");
   if (contadorGlobal) {
-    contadorGlobal.textContent = (sesion.usuario || "Aspirante") + " (ID: " + (sesion.idCandidato || sesion.idUsuario) + ")";
+    contadorGlobal.textContent = (sesion.usuario || "Aspirante") + " (ID: " + idCandidato + ")";
   }
 
-  var indiceGlobal = parseInt(sessionStorage.getItem("shyplay_bateria_indice") || "0", 10);
+  // Cargar progreso desde localStorage (Recupera pregunta exacta)
+  var indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
   var listaPreguntasGlobal = [];
-  var respuestasGlobales = JSON.parse(sessionStorage.getItem("shyplay_respuestas_parciales") || "{}");
+  var respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
   var cronometroIniciado = false;
 
   // Elementos del DOM
@@ -93,14 +100,14 @@ document.addEventListener("DOMContentLoaded", function () {
     listaPreguntasGlobal = preguntasUnificadas;
     mostrarCargando(false);
 
-    // Validar que el índice guardado no rebase el total
-    if (indiceGlobal >= listaPreguntasGlobal.length) {
+    // Ajustar si el índice guardado excede la lista
+    if (indiceGlobal >= listaPreguntasGlobal.length && listaPreguntasGlobal.length > 0) {
       indiceGlobal = listaPreguntasGlobal.length - 1;
     }
 
     pintarPreguntaActual();
 
-    // Arrancar cronómetro global solo cuando las preguntas ya están descargadas y listas
+    // Arrancar cronómetro sólo cuando los datos ya se cargaron
     if (!cronometroIniciado && typeof window.iniciarCronometroGlobal === "function") {
       cronometroIniciado = true;
       window.iniciarCronometroGlobal(1500);
@@ -108,13 +115,15 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function pintarPreguntaActual() {
-    if (indiceGlobal >= listaPreguntasGlobal.length) {
+    if (indiceGlobal >= listaPreguntasGlobal.length && listaPreguntasGlobal.length > 0) {
       finalizarBateria();
       return;
     }
 
-    sessionStorage.setItem("shyplay_bateria_indice", indiceGlobal);
+    // Guardar avance continuo en localStorage
+    localStorage.setItem(CLAVE_INDICE, indiceGlobal);
     var itemActual = listaPreguntasGlobal[indiceGlobal];
+    if (!itemActual) return;
 
     if (secVocabulario) secVocabulario.style.display = "none";
     if (secAbstraccion) secAbstraccion.style.display = "none";
@@ -285,7 +294,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // BOTÓN SIGUIENTE
+  // BOTÓN SIGUIENTE (Captura y Almacenamiento continuo)
   if (btnSiguiente) {
     btnSiguiente.addEventListener("click", function () {
       if (!listaPreguntasGlobal || listaPreguntasGlobal.length === 0) return;
@@ -331,8 +340,8 @@ document.addEventListener("DOMContentLoaded", function () {
         respuestasGlobales[indiceGlobal] = respuestasBloqueActual;
       }
 
-      // Guardar parciales en sessionStorage para persistencia F5 y pestañas
-      sessionStorage.setItem("shyplay_respuestas_parciales", JSON.stringify(respuestasGlobales));
+      // Guardar respuestas parciales en localStorage
+      localStorage.setItem(CLAVE_RESPUESTAS, JSON.stringify(respuestasGlobales));
 
       indiceGlobal++;
       pintarPreguntaActual();
@@ -347,22 +356,22 @@ document.addEventListener("DOMContentLoaded", function () {
     if (btnSiguiente) btnSiguiente.hidden = true;
     if (cierre) cierre.hidden = false;
 
-    // Marcar usuario como bloqueado en sesión y base de datos para impedir reingreso sin autorización
+    // Bloquear al candidato para evitar reingreso
     sesion.bloqueado = true;
-    sesion.mensaje = "Tu etapa ha terminado, un administrador se pondrá en contacto contigo, hasta tu siguiente fase.";
+    sesion.mensaje = "Tu etapa ha terminado, un administrador se pondrá en contacto contigo hasta tu siguiente fase.";
     sessionStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
+    localStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
 
-    // Limpiar temporizadores y avance temporal
-    sessionStorage.removeItem("shyplay_bateria_tiempo");
-    sessionStorage.removeItem("shyplay_bateria_indice");
+    // Limpiar claves temporales de avance de la evaluación
+    localStorage.removeItem(CLAVE_INDICE);
+    localStorage.removeItem(CLAVE_RESPUESTAS);
+    localStorage.removeItem("shyplay_bateria_tiempo_" + idCandidato);
 
-    // Aquí puedes realizar el fetch para enviar 'respuestasGlobales' al backend si lo requieres
     console.log("Enviando respuestas finales al servidor...", respuestasGlobales);
   };
 
   async function cargarCombinacionYArrancar() {
     try {
-      var idCandidato = sesion.idCandidato || sesion.idUsuario || 1;
       const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/combinacion-activa?id_candidato=${idCandidato}`);
       const data = await response.json();
 
