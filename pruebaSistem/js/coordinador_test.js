@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // 1. SEGURIDAD: Verificar sesión activa
+
   var sesionStr = sessionStorage.getItem("shyplay_sesion") || localStorage.getItem("shyplay_sesion");
   if (!sesionStr) {
     alert("Acceso denegado. Debes iniciar sesión primero.");
