@@ -373,69 +373,66 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- FINALIZAR Y BLOQUEAR ---
   window.finalizarBateria = async function() {
-    if (instrucciones) instrucciones.hidden = true;
-    if (secVocabulario) secVocabulario.style.display = "none";
-    if (secAbstraccion) secAbstraccion.style.display = "none";
-    if (secBloques) secBloques.style.display = "none";
-    if (btnSiguiente) btnSiguiente.hidden = true;
-    if (cierre) cierre.hidden = false;
+      if (instrucciones) instrucciones.hidden = true;
+      if (secVocabulario) secVocabulario.style.display = "none";
+      if (secAbstraccion) secAbstraccion.style.display = "none";
+      if (secBloques) secBloques.style.display = "none";
+      if (btnSiguiente) btnSiguiente.hidden = true;
+      if (cierre) cierre.hidden = false;
 
-    // 1. Empaquetar respuestas en formato plano para la tabla respuesta_candidato
-    var respuestasPlanas = [];
-    listaPreguntasGlobal.forEach((item, index) => {
-      var resp = respuestasGlobales[index];
-      if (resp !== undefined && resp !== null) {
-        if (typeof resp === 'object') {
-          Object.keys(resp).forEach(subKey => {
+      //Empaquetar respuestas y enviar al backend
+      var respuestasPlanas = [];
+      listaPreguntasGlobal.forEach((item, index) => {
+        var resp = respuestasGlobales[index];
+        if (resp !== undefined && resp !== null) {
+          if (typeof resp === 'object') {
+            Object.keys(resp).forEach(subKey => {
+              respuestasPlanas.push({
+                idCandidato: parseInt(idCandidatoReal),
+                idPreguntaTest: item.idPreguntaTest,
+                subParte: subKey,
+                respuestaSeleccionada: String(resp[subKey])
+              });
+            });
+          } else {
             respuestasPlanas.push({
               idCandidato: parseInt(idCandidatoReal),
               idPreguntaTest: item.idPreguntaTest,
-              subParte: subKey,
-              respuestaSeleccionada: String(resp[subKey])
+              subParte: "sub_0",
+              respuestaSeleccionada: String(resp)
             });
-          });
-        } else {
-          respuestasPlanas.push({
-            idCandidato: parseInt(idCandidatoReal),
-            idPreguntaTest: item.idPreguntaTest,
-            subParte: "sub_0",
-            respuestaSeleccionada: String(resp)
-          });
+          }
         }
-      }
-    });
-
-    // 2. Enviar al backend por POST
-    try {
-      console.log("Enviando respuestas al servidor...", respuestasPlanas);
-      await fetch("https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/guardar-respuestas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idCandidato: parseInt(idCandidatoReal),
-          respuestas: respuestasPlanas
-        })
       });
-    } catch (err) {
-      console.error("Error al enviar respuestas finales:", err);
-    }
 
-    // 3. Bloquear sesión permanentemente y expulsar al login
-    sesion.bloqueado = true;
-    sesion.mensaje = "Tu etapa ha terminado, un administrador se pondrá en contacto contigo hasta tu siguiente fase.";
-    sessionStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
-    localStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
+      try {
+        await fetch("https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/guardar-respuestas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            idCandidato: parseInt(idCandidatoReal),
+            respuestas: respuestasPlanas
+          })
+        });
+      } catch (err) {
+        console.error("Error al enviar respuestas:", err);
+      }
 
-    // Limpiar temporizadores y avance
-    localStorage.removeItem(CLAVE_INDICE);
-    localStorage.removeItem(CLAVE_RESPUESTAS);
-    localStorage.removeItem("shyplay_bateria_tiempo_" + idCandidatoReal);
+      //Bloquear sesión permanentemente
+      sesion.bloqueado = true;
+      sesion.mensaje = "Tu etapa ha terminado, un administrador se pondrá en contacto contigo hasta tu siguiente fase.";
+      sessionStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
+      localStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
 
-    alert("¡Prueba finalizada con éxito! Tus respuestas han sido guardadas.");
+      //Limpiar avance temporal
+      localStorage.removeItem(CLAVE_INDICE);
+      localStorage.removeItem(CLAVE_RESPUESTAS);
+      localStorage.removeItem("shyplay_bateria_tiempo_" + idCandidatoReal);
 
-    // Forzar salida al login
-    window.location.href = "login.html";
-  };
+      //Alerta limpia y redirección inmediata al login
+      alert("¡Prueba finalizada con éxito! Tus respuestas han sido guardadas.");
+      window.location.href = "login.html";
+    };
 
   cargarCombinacionYArrancar();
 });
