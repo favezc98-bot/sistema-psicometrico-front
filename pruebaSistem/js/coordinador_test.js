@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-
+  // 1. SEGURIDAD: Verificar sesión activa
   var sesionStr = sessionStorage.getItem("shyplay_sesion") || localStorage.getItem("shyplay_sesion");
   if (!sesionStr) {
     alert("Acceso denegado. Debes iniciar sesión primero.");
@@ -16,21 +16,13 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  // Identificador único del candidato para persistencia en localStorage
-  var idCandidato = sesion.idCandidato || sesion.idUsuario || "1";
-  var CLAVE_INDICE = "shyplay_bateria_indice_" + idCandidato;
-  var CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_" + idCandidato;
+  // Identificador dinámico de sesión
+  var idCandidatoReal = null;
+  var CLAVE_INDICE = "";
+  var CLAVE_RESPUESTAS = "";
 
-  // Pintar nombre del aspirante en la barra superior
-  var contadorGlobal = document.getElementById("aspirante-nombre");
-  if (contadorGlobal) {
-    contadorGlobal.textContent = (sesion.usuario || "Aspirante") + " (ID: " + idCandidato + ")";
-  }
-
-  // Cargar progreso desde localStorage (Recupera pregunta exacta)
-  var indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
   var listaPreguntasGlobal = [];
-  var respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
+  var respuestasGlobales = {};
   var cronometroIniciado = false;
 
   // Elementos del DOM
@@ -42,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var instrucciones = document.getElementById("instrucciones");
   var modalCargando = document.getElementById("modal-cargando");
 
-  var combinacionActiva = (sessionStorage.getItem("shyplay_bateria_combinacion") || "BC").trim().toUpperCase();
+  var combinacionActiva = "BC"; // Valor por defecto temporal
 
   function mostrarCargando(mostrar) {
     if (modalCargando) {
@@ -50,9 +42,66 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function inicializarBateria() {
+  // --- CARGA DINÁMICA DE CANDIDATO Y COMBINACIÓN ---
+  async function cargarCombinacionYArrancar() {
     mostrarCargando(true);
 
+    try {
+      var correoCandidato = sesion.usuario || sesion.correo;
+      if (!correoCandidato) throw new Error("Correo de sesión no encontrado.");
+
+      // Obtener el ID de candidato real asociado a este correo
+      const resBusqueda = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/buscar?correo=${encodeURIComponent(correoCandidato)}`);
+      const dataBusqueda = await resBusqueda.json();
+
+      if (dataBusqueda.encontrado && dataBusqueda.id_candidato) {
+        idCandidatoReal = dataBusqueda.id_candidato;
+      } else {
+        idCandidatoReal = sesion.idCandidato || sesion.idUsuario || 1;
+      }
+
+      // Configurar llaves únicas de localStorage por candidato
+      CLAVE_INDICE = "shyplay_bateria_indice_" + idCandidatoReal;
+      CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_" + idCandidatoReal;
+
+      // Cargar progreso previo si existiera
+      window.indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
+      respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
+
+      // Pintar nombre e ID real en la barra superior
+      var contadorGlobal = document.getElementById("aspirante-nombre");
+      if (contadorGlobal) {
+        contadorGlobal.textContent = (dataBusqueda.nombre ? (dataBusqueda.nombre + " " + dataBusqueda.apellido) : (sesion.usuario || "Aspirante")) + " (ID: " + idCandidatoReal + ")";
+      }
+
+      // Consultar la combinación activa en la BD
+      const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/combinacion-activa?id_candidato=${idCandidatoReal}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.encontrado && data.combinacion) {
+          combinacionActiva = data.combinacion.trim().toUpperCase();
+        }
+      }
+    } catch (e) {
+      console.error("Error al sincronizar con el servidor:", e);
+      idCandidatoReal = sesion.idCandidato || 1;
+      CLAVE_INDICE = "shyplay_bateria_indice_" + idCandidatoReal;
+      CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_" + idCandidatoReal;
+      window.indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
+      respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
+    }
+
+    if (combinacionActiva.includes("AB") || combinacionActiva.includes("A")) {
+      combinacionActiva = "AB";
+    } else {
+      combinacionActiva = "BC";
+    }
+
+    console.log("-> ID Candidato Real:", idCandidatoReal, "| Combinación Definitiva:", combinacionActiva);
+    inicializarBateria();
+  }
+
+  function inicializarBateria() {
     if (combinacionActiva === "AB") {
       Promise.all([
         fetch("https://sistema-psicometrico-back-7.onrender.com/api/preguntas_vocabulario").then(r => r.json()),
@@ -65,11 +114,10 @@ document.addEventListener("DOMContentLoaded", function () {
           ...pregAbs.map(p => ({ ...p, modulo: 'ABSTRACCION' }))
         ]);
       }).catch(err => {
-        console.error("Error cargando batería A+B:", err);
+        console.error("Error cargando A+B:", err);
         mostrarCargando(false);
       });
-
-    } else if (combinacionActiva === "BC") {
+    } else {
       Promise.all([
         fetch("https://sistema-psicometrico-back-7.onrender.com/api/preguntas_abstraccion").then(r => r.json()),
         fetch("https://sistema-psicometrico-back-7.onrender.com/api/preguntas_bloque").then(r => r.json()),
@@ -77,12 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ]).then(([pregAbs, pregBloq, respBloq]) => {
         var bloquesProcesados = pregBloq.map(p => {
           var respuestas = respBloq.filter(r => r.idPreguntaTest === p.idPreguntaTest);
-          return {
-            ...p,
-            modulo: 'BLOQUE',
-            subitems: [p],
-            respuestasAsociadas: respuestas
-          };
+          return { ...p, modulo: 'BLOQUE', subitems: [p], respuestasAsociadas: respuestas };
         });
 
         formatarYArrancar([
@@ -90,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
           ...bloquesProcesados
         ]);
       }).catch(err => {
-        console.error("DETALLE DEL FALLO EN B+C:", err);
+        console.error("Error cargando B+C:", err);
         mostrarCargando(false);
       });
     }
@@ -100,14 +143,12 @@ document.addEventListener("DOMContentLoaded", function () {
     listaPreguntasGlobal = preguntasUnificadas;
     mostrarCargando(false);
 
-    // Ajustar si el índice guardado excede la lista
-    if (indiceGlobal >= listaPreguntasGlobal.length && listaPreguntasGlobal.length > 0) {
-      indiceGlobal = listaPreguntasGlobal.length - 1;
+    if (window.indiceGlobal >= listaPreguntasGlobal.length && listaPreguntasGlobal.length > 0) {
+      window.indiceGlobal = listaPreguntasGlobal.length - 1;
     }
 
     pintarPreguntaActual();
 
-    // Arrancar cronómetro sólo cuando los datos ya se cargaron
     if (!cronometroIniciado && typeof window.iniciarCronometroGlobal === "function") {
       cronometroIniciado = true;
       window.iniciarCronometroGlobal(1500);
@@ -115,14 +156,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function pintarPreguntaActual() {
-    if (indiceGlobal >= listaPreguntasGlobal.length && listaPreguntasGlobal.length > 0) {
-      finalizarBateria();
+    if (window.indiceGlobal >= listaPreguntasGlobal.length && listaPreguntasGlobal.length > 0) {
+      window.finalizarBateria();
       return;
     }
 
-    // Guardar avance continuo en localStorage
-    localStorage.setItem(CLAVE_INDICE, indiceGlobal);
-    var itemActual = listaPreguntasGlobal[indiceGlobal];
+    localStorage.setItem(CLAVE_INDICE, window.indiceGlobal);
+    var itemActual = listaPreguntasGlobal[window.indiceGlobal];
     if (!itemActual) return;
 
     if (secVocabulario) secVocabulario.style.display = "none";
@@ -145,10 +185,10 @@ document.addEventListener("DOMContentLoaded", function () {
     var enunciado = document.getElementById("enunciado");
     var opciones = document.getElementById("opciones");
 
-    if (enunciado) enunciado.textContent = (indiceGlobal + 1) + ". " + item.pregunta;
+    if (enunciado) enunciado.textContent = (window.indiceGlobal + 1) + ". " + item.pregunta;
     if (opciones) {
       opciones.innerHTML = "";
-      var respuestaPrevia = respuestasGlobales[indiceGlobal];
+      var respuestaPrevia = respuestasGlobales[window.indiceGlobal];
 
       item.respuestasAsociadas.forEach(op => {
         var label = document.createElement("label");
@@ -164,9 +204,9 @@ document.addEventListener("DOMContentLoaded", function () {
     var enunciadoSerie = document.getElementById("enunciado-serie");
     var inputRespuesta = document.getElementById("input-respuesta");
 
-    if (enunciadoSerie) enunciadoSerie.textContent = (indiceGlobal + 1) + ". " + item.pregunta;
+    if (enunciadoSerie) enunciadoSerie.textContent = (window.indiceGlobal + 1) + ". " + item.pregunta;
     if (inputRespuesta) {
-      inputRespuesta.value = respuestasGlobales[indiceGlobal] || "";
+      inputRespuesta.value = respuestasGlobales[window.indiceGlobal] || "";
       inputRespuesta.focus();
     }
   }
@@ -176,14 +216,12 @@ document.addEventListener("DOMContentLoaded", function () {
     var opcionesBloques = document.getElementById("opciones-bloques") || document.getElementById("opciones");
 
     var principalSubitem = item.subitems[0];
-    var respuestaPrevia = respuestasGlobales[indiceGlobal] || {};
+    var respuestaPrevia = respuestasGlobales[window.indiceGlobal] || {};
 
     if (contenedorPregunta) {
       contenedorPregunta.innerHTML = `
-        <h3 style="margin-bottom: 15px; color: #0c74a0;">${(indiceGlobal + 1)}. Selecciona la opción correcta</h3>
-        <img class="imagen-patron-bloque"
-             src="data:image/png;base64,${principalSubitem.pregunta}"
-             alt="Patrón Reactivo ${item.numeroReactivo}">
+        <h3 style="margin-bottom: 15px; color: #0c74a0;">${(window.indiceGlobal + 1)}. Selecciona la opción correcta</h3>
+        <img class="imagen-patron-bloque" src="data:image/png;base64,${principalSubitem.pregunta}" alt="Reactivo ${item.numeroReactivo}">
       `;
     }
 
@@ -200,18 +238,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (esDoble) {
         var mitad = Math.ceil(todasLasOpc.length / 2);
-        var opcionesArriba = todasLasOpc.slice(0, mitad);
-        var opcionesAbajo = todasLasOpc.slice(mitad);
-
         var bloquesDatos = [
-          { titulo: "Primer cuadro gris (Izquierda)", opciones: opcionesArriba, parte: "izquierda", subKey: "sub_0" },
-          { titulo: "Segundo cuadro gris (Derecha)", opciones: opcionesAbajo, parte: "derecha", subKey: "sub_1" }
+          { titulo: "Primer cuadro gris (Izquierda)", opciones: todasLasOpc.slice(0, mitad), parte: "izquierda", subKey: "sub_0" },
+          { titulo: "Segundo cuadro gris (Derecha)", opciones: todasLasOpc.slice(mitad), parte: "derecha", subKey: "sub_1" }
         ];
 
         bloquesDatos.forEach(function (bloque) {
           var tarjetaSub = document.createElement("div");
           tarjetaSub.className = "bloque-subseccion";
-
           var tituloSub = document.createElement("div");
           tituloSub.className = "bloque-subseccion-titulo";
           tituloSub.textContent = bloque.titulo;
@@ -223,16 +257,14 @@ document.addEventListener("DOMContentLoaded", function () {
           bloque.opciones.forEach(function (op, index) {
             var label = document.createElement("label");
             label.className = "tarjeta-opcion-bloque";
-
             var input = document.createElement("input");
             input.type = "radio";
             input.name = "reactivo_" + item.numeroReactivo + "_grupo_" + bloque.parte;
             input.id = "radio_" + item.numeroReactivo + "_" + bloque.parte + "_" + index;
             input.value = op.opcion;
-            if (respuestaPrevia[bloque.subKey] === op.opcion) input.checked = true;
+            if (respuestaPrevia[bloque.subKey] === String(op.opcion)) input.checked = true;
 
             label.htmlFor = input.id;
-
             var letraSpan = document.createElement("span");
             letraSpan.className = "letra-opcion";
             letraSpan.textContent = letrasOpciones[op.opcion] || op.opcion;
@@ -245,14 +277,11 @@ document.addEventListener("DOMContentLoaded", function () {
               imgRespuesta.src = "data:image/png;base64," + op.respuesta;
               label.appendChild(imgRespuesta);
             }
-
             filaOpciones.appendChild(label);
           });
-
           tarjetaSub.appendChild(filaOpciones);
           opcionesBloques.appendChild(tarjetaSub);
         });
-
       } else {
         var tarjetaNorm = document.createElement("div");
         tarjetaNorm.className = "bloque-subseccion";
@@ -262,16 +291,14 @@ document.addEventListener("DOMContentLoaded", function () {
         todasLasOpc.forEach(function (op, index) {
           var label = document.createElement("label");
           label.className = "tarjeta-opcion-bloque";
-
           var input = document.createElement("input");
           input.type = "radio";
           input.name = "radio_simple_" + principalSubitem.idPreguntaTest;
           input.id = "radio_simple_" + principalSubitem.idPreguntaTest + "_" + index;
           input.value = op.opcion;
-          if (respuestaPrevia["sub_0"] === op.opcion) input.checked = true;
+          if (respuestaPrevia["sub_0"] === String(op.opcion)) input.checked = true;
 
           label.htmlFor = input.id;
-
           var letraSpan = document.createElement("span");
           letraSpan.className = "letra-opcion";
           letraSpan.textContent = letrasOpciones[op.opcion] || op.opcion;
@@ -284,33 +311,31 @@ document.addEventListener("DOMContentLoaded", function () {
             imgRespuesta.src = "data:image/png;base64," + op.respuesta;
             label.appendChild(imgRespuesta);
           }
-
           contenedorFila.appendChild(label);
         });
-
         tarjetaNorm.appendChild(contenedorFila);
         opcionesBloques.appendChild(tarjetaNorm);
       }
     }
   }
 
-  // BOTÓN SIGUIENTE (Captura y Almacenamiento continuo)
+  // BOTÓN SIGUIENTE
   if (btnSiguiente) {
     btnSiguiente.addEventListener("click", function () {
       if (!listaPreguntasGlobal || listaPreguntasGlobal.length === 0) return;
 
-      var itemActual = listaPreguntasGlobal[indiceGlobal];
+      var itemActual = listaPreguntasGlobal[window.indiceGlobal];
       if (!itemActual) return;
 
       if (itemActual.modulo === 'VOCABULARIO') {
         var sel = secVocabulario.querySelector("input[name='resp_vocabulario']:checked");
         if (!sel) { alert("Selecciona una respuesta"); return; }
-        respuestasGlobales[indiceGlobal] = sel.value;
+        respuestasGlobales[window.indiceGlobal] = sel.value;
 
       } else if (itemActual.modulo === 'ABSTRACCION') {
         var val = document.getElementById("input-respuesta").value.trim();
         if (val === "") { alert("Escribe tu respuesta"); return; }
-        respuestasGlobales[indiceGlobal] = val;
+        respuestasGlobales[window.indiceGlobal] = val;
 
       } else if (itemActual.modulo === 'BLOQUE') {
         var respuestasBloqueActual = {};
@@ -337,18 +362,17 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           respuestasBloqueActual["sub_0"] = seleccionada.value;
         }
-        respuestasGlobales[indiceGlobal] = respuestasBloqueActual;
+        respuestasGlobales[window.indiceGlobal] = respuestasBloqueActual;
       }
 
-      // Guardar respuestas parciales en localStorage
       localStorage.setItem(CLAVE_RESPUESTAS, JSON.stringify(respuestasGlobales));
-
-      indiceGlobal++;
+      window.indiceGlobal++;
       pintarPreguntaActual();
     });
   }
 
-  window.finalizarBateria = function() {
+  // --- FINALIZAR Y BLOQUEAR ---
+  window.finalizarBateria = async function() {
     if (instrucciones) instrucciones.hidden = true;
     if (secVocabulario) secVocabulario.style.display = "none";
     if (secAbstraccion) secAbstraccion.style.display = "none";
@@ -356,79 +380,62 @@ document.addEventListener("DOMContentLoaded", function () {
     if (btnSiguiente) btnSiguiente.hidden = true;
     if (cierre) cierre.hidden = false;
 
-    // Bloquear al candidato para evitar reingreso
+    // 1. Empaquetar respuestas en formato plano para la tabla respuesta_candidato
+    var respuestasPlanas = [];
+    listaPreguntasGlobal.forEach((item, index) => {
+      var resp = respuestasGlobales[index];
+      if (resp !== undefined && resp !== null) {
+        if (typeof resp === 'object') {
+          Object.keys(resp).forEach(subKey => {
+            respuestasPlanas.push({
+              idCandidato: parseInt(idCandidatoReal),
+              idPreguntaTest: item.idPreguntaTest,
+              subParte: subKey,
+              respuestaSeleccionada: String(resp[subKey])
+            });
+          });
+        } else {
+          respuestasPlanas.push({
+            idCandidato: parseInt(idCandidatoReal),
+            idPreguntaTest: item.idPreguntaTest,
+            subParte: "sub_0",
+            respuestaSeleccionada: String(resp)
+          });
+        }
+      }
+    });
+
+    // 2. Enviar al backend por POST
+    try {
+      console.log("Enviando respuestas al servidor...", respuestasPlanas);
+      await fetch("https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/guardar-respuestas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idCandidato: parseInt(idCandidatoReal),
+          respuestas: respuestasPlanas
+        })
+      });
+    } catch (err) {
+      console.error("Error al enviar respuestas finales:", err);
+    }
+
+    // 3. Bloquear sesión permanentemente y expulsar al login
     sesion.bloqueado = true;
     sesion.mensaje = "Tu etapa ha terminado, un administrador se pondrá en contacto contigo hasta tu siguiente fase.";
     sessionStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
     localStorage.setItem("shyplay_sesion", JSON.stringify(sesion));
 
-    // Limpiar claves temporales de avance de la evaluación
+    // Limpiar temporizadores y avance
     localStorage.removeItem(CLAVE_INDICE);
     localStorage.removeItem(CLAVE_RESPUESTAS);
-    localStorage.removeItem("shyplay_bateria_tiempo_" + idCandidato);
+    localStorage.removeItem("shyplay_bateria_tiempo_" + idCandidatoReal);
 
-    console.log("Enviando respuestas finales al servidor...", respuestasGlobales);
+    alert("¡Prueba finalizada con éxito! Tus respuestas han sido guardadas.");
+
+    // Forzar salida al login
+    window.location.href = "login.html";
   };
 
-  // --- FUNCIÓN ASÍNCRONA CORREGIDA PARA OBTENER LA COMBINACIÓN OFICIAL ---
-    // --- FUNCIÓN DINÁMICA: OBTIENE EL ID_CANDIDATO REAL Y SU COMBINACIÓN ---
-      async function cargarCombinacionYArrancar() {
-        mostrarCargando(true);
-
-        try {
-          //Obtener el correo del candidato desde la sesión actual
-          var correoCandidato = sesion.usuario || sesion.correo;
-
-          if (!correoCandidato) {
-            throw new Error("No se encontró el correo del candidato en la sesión.");
-          }
-
-          console.log("-> Buscando ID de candidato en la BD para el correo:", correoCandidato);
-
-          //Consultar la API de búsqueda para obtener el id_candidato real (ej. ID 1)
-          const resBusqueda = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/buscar?correo=${encodeURIComponent(correoCandidato)}`);
-          const dataBusqueda = await resBusqueda.json();
-
-          if (!dataBusqueda.encontrado || !dataBusqueda.id_candidato) {
-            throw new Error("El candidato no está registrado en la tabla de candidatos.");
-          }
-
-          var idCandidatoReal = dataBusqueda.id_candidato;
-          console.log("-> ¡ID de candidato real obtenido de la BD:", idCandidatoReal);
-
-          // Actualizamos las llaves locales con el ID correcto
-          var CLAVE_INDICE = "shyplay_bateria_indice_" + idCandidatoReal;
-          var CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_" + idCandidatoReal;
-
-          //Consultar la combinación activa usando el id_candidato real
-          console.log("-> Consultando combinación activa para id_candidato:", idCandidatoReal);
-          const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/combinacion-activa?id_candidato=${idCandidatoReal}`);
-
-          if (response.ok) {
-            const data = await response.json();
-            console.log("-> Respuesta de combinación:", data);
-
-            if (data.encontrado && data.combinacion) {
-              combinacionActiva = data.combinacion.trim().toUpperCase();
-              sessionStorage.setItem("shyplay_bateria_combinacion", combinacionActiva);
-            }
-          }
-
-        } catch (e) {
-          console.error("-> Error en el proceso dinámico:", e);
-          combinacionActiva = (sessionStorage.getItem("shyplay_bateria_combinacion") || "BC").trim().toUpperCase();
-        }
-
-        // Normalizar combinación por seguridad
-        if (combinacionActiva.includes("AB") || combinacionActiva.includes("A")) {
-          combinacionActiva = "AB";
-        } else {
-          combinacionActiva = "BC";
-        }
-
-        console.log("-> COMBINACIÓN DEFINITIVA A EJECUTAR:", combinacionActiva);
-
-        // Arrancar la batería con los datos correctos
-        inicializarBateria();
-      }
+  cargarCombinacionYArrancar();
 });
