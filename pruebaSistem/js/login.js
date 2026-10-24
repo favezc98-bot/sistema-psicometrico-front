@@ -41,23 +41,26 @@
     .then(function (data) {
       //Evaluar la respuesta del backend {"status": "success", "mensaje": "Acceso concedido"}
       if (data.status === "success") {
-              // Guardamos la sesión activa incluyendo el idUsuario y el idRol
-              sessionStorage.setItem("shyplay_sesion", JSON.stringify({
-                idUsuario: data.idUsuario,
-                idRol: data.idRol,
-                usuario: usuario,
-                mensaje: data.mensaje
-              }));
+                  // Verificar si el backend indica que está bloqueado o requiere autorización
+                  if (data.bloqueado) {
+                    error.hidden = false;
+                    error.textContent = data.mensaje || "Autorización denegada, un administrador se pondrá en contacto contigo, gracias.";
+                    return;
+                  }
 
-              // Redirigir según el rol
-              if (data.idRol === 1) {
-                // Es EVALUADOR -> Mandarlo al panel de control del evaluador
-                window.location.href = "evaluador.html";
-              } else {
-                // Es CANDIDATO/USUARIO -> Mandarlo a la pantalla de inicio del test
-                window.location.href = "inicio.html";
-              }
+                  sessionStorage.setItem("shyplay_sesion", JSON.stringify({
+                    idUsuario: data.idUsuario,
+                    idRol: data.idRol,
+                    usuario: usuario,
+                    mensaje: data.mensaje,
+                    bloqueado: false
+                  }));
 
+                  if (data.idRol === 1) {
+                    window.location.href = "evaluador.html";
+                  } else {
+                    window.location.href = "inicio.html";
+                  }
             } else {
               // Si las credenciales fueron incorrectas
               error.hidden = false;
