@@ -1,10 +1,11 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Definimos el tiempo global en segundos según la combinación (Ej: 25 minutos = 1500 segundos)
-    var tiempoTotalSegundos = 1500;
+window.iniciarCronometroGlobal = function(segundosIniciales) {
+    var tiempoTotalSegundos = segundosIniciales || 1500;
     var tiempoGuardado = sessionStorage.getItem("shyplay_bateria_tiempo");
 
     if (tiempoGuardado !== null) {
         tiempoTotalSegundos = parseInt(tiempoGuardado, 10);
+    } else {
+        sessionStorage.setItem("shyplay_bateria_tiempo", tiempoTotalSegundos);
     }
 
     var elemTiempo = document.getElementById("tiempo");
@@ -18,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (tiempoTotalSegundos <= 0) {
             alert("El tiempo de la prueba ha finalizado.");
-            // Disparar función de cierre global
+            sessionStorage.setItem("shyplay_bateria_tiempo_terminado", "true");
             if (typeof finalizarBateria === "function") {
                 finalizarBateria();
             }
@@ -29,5 +30,6 @@ document.addEventListener("DOMContentLoaded", function () {
         window.setTimeout(actualizarReloj, 1000);
     }
 
+    // Arranca el conteo
     actualizarReloj();
-});
+};
