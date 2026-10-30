@@ -143,10 +143,22 @@
             </div>
 
             <!-- Fila: Contraseña -->
-            <div style="margin-bottom: 25px;">
+            <div style="margin-bottom: 20px;">
                 <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">Contraseña de Acceso</label>
                 <input type="password" id="reg-password" required placeholder="••••••••" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
                 <small style="color: #64748b; font-size: 11px; margin-top: 4px; display: block;">Esta contraseña será la que use el candidato para iniciar sesión en su prueba.</small>
+            </div>
+
+            <!-- Fila: Domicilio y Fecha de Nacimiento -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">Domicilio</label>
+                    <input type="text" id="reg-domicilio" required placeholder="Ej. ABCDEFGHI" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">Fecha de Nacimiento</label>
+                    <input type="text" id="reg-fecha-nacimiento" required placeholder="Ej. 5 septiembre 1991" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                </div>
             </div>
 
             <!-- Botones de Acción -->
