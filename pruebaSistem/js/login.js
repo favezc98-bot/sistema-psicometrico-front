@@ -13,6 +13,10 @@
     formulario.addEventListener("submit", function (evento) {
       evento.preventDefault();
 
+      // LIMPIEZA OBLIGATORIA: Borrar datos de sesiones previas
+      sessionStorage.clear();
+      localStorage.removeItem("shyplay_sesion");
+
       var usuario = document.getElementById("usuario").value.trim();
       var contrasena = document.getElementById("contrasena").value;
 

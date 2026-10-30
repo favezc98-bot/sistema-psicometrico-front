@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const nombreEvaluador = sesion && sesion.usuario ? sesion.usuario : "Admin";
 
-    // 1. EVENTO BUSCAR CANDIDATO (GET /api/evaluacion/buscar)
+    //EVENTO BUSCAR CANDIDATO (GET /api/evaluacion/buscar)
     btnBuscar.addEventListener("click", async () => {
         const correo = inputCorreo.value.trim();
         if (!correo) {
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 2. EVENTO ASIGNAR Y GUARDAR (POST /api/evaluacion/asignar)
+    //EVENTO ASIGNAR Y GUARDAR (POST /api/evaluacion/asignar)
     formAsignar.addEventListener("submit", async (e) => {
         e.preventDefault();
 
