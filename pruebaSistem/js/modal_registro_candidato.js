@@ -32,23 +32,44 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Capturar el envío del formulario
+  // Capturar el envío del formulario y enviarlo al Backend vía Fetch POST
   if (formRegistro) {
-    formRegistro.addEventListener("submit", function (e) {
+    formRegistro.addEventListener("submit", async function (e) {
       e.preventDefault();
 
+      // Construir el objeto JSON con todos los campos requeridos por el backend
       const nuevoCandidato = {
         nombre: document.getElementById("reg-nombre").value,
         apellido: document.getElementById("reg-apellido").value,
         correo: document.getElementById("reg-correo").value,
         telefono: document.getElementById("reg-telefono").value,
-        password: document.getElementById("reg-password").value
+        password: document.getElementById("reg-password").value,
+        domicilio: document.getElementById("reg-domicilio").value,
+        fecha_nacimiento: document.getElementById("reg-fecha-nacimiento").value
       };
 
-      console.log("Datos listos para enviar al futuro endpoint:", nuevoCandidato);
-      alert("¡Formulario validado con éxito! (Aquí conectaremos el backend en el siguiente paso)");
+      try {
+        const response = await fetch("https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/registro_candidato", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(nuevoCandidato)
+        });
 
-      cerrarModal();
+        const resultado = await response.json();
+
+        if (response.ok && resultado.exito) {
+          alert(resultado.mensaje || "Candidato registrado correctamente en el sistema");
+          cerrarModal();
+        } else {
+          alert("Error al registrar: " + (resultado.mensaje || resultado.error || "No se pudo completar la operación"));
+        }
+
+      } catch (error) {
+        console.error("Error de red o conexión con el servidor:", error);
+        alert("Ocurrió un error al conectar con el servidor backend.");
+      }
     });
   }
 });
