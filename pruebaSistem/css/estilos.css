@@ -710,3 +710,8 @@ textarea:focus-visible {
   background-color: #e6f5fb;
 }
 
+<!-- Estilo para la animación del círculo -->
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
