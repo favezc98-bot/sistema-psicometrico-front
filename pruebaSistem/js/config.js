@@ -24,3 +24,33 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. Leer la sesión activa
+    var sesionStr = sessionStorage.getItem("shyplay_sesion") || localStorage.getItem("shyplay_sesion");
+    if (sesionStr) {
+      var sesion = JSON.parse(sesionStr);
+      var lblNombre = document.getElementById("aspirante-nombre");
+
+      if (lblNombre) {
+        // Muestra el correo o nombre guardado y su ID real
+        var idMostrar = sesion.idCandidato || sesion.idUsuario || "";
+        lblNombre.textContent = (sesion.usuario || "Aspirante") + (idMostrar ? " (ID: " + idMostrar + ")" : "");
+      }
+    }
+
+    // 2. Funcionalidad del botón Salir en inicio.html
+    const btnSalir = document.getElementById("btn-salir");
+    const modalSalida = document.getElementById("modal-salida");
+
+    if (btnSalir) {
+      btnSalir.addEventListener("click", function () {
+        if (modalSalida) modalSalida.style.display = "flex";
+        setTimeout(function () {
+          sessionStorage.clear();
+          localStorage.removeItem("shyplay_sesion");
+          window.location.href = "login.html";
+        }, 800);
+      });
+    }
+  });
