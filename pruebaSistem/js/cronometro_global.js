@@ -1,35 +1,53 @@
-window.iniciarCronometroGlobal = function(segundosIniciales) {
-    var tiempoTotalSegundos = segundosIniciales || 1500;
-    var tiempoGuardado = sessionStorage.getItem("shyplay_bateria_tiempo");
+window.iniciarCronometroGlobal = function(tiempoTotalSegundosporDefecto) {
+    var elementoTiempo = document.getElementById("tiempo");
+    if (!elementoTiempo) return;
 
-    if (tiempoGuardado !== null) {
-        tiempoTotalSegundos = parseInt(tiempoGuardado, 10);
+    // Usar la llave dinámica por evaluación generada en coordinador_test.js
+    var claveTiempoEval = window.CLAVE_TIEMPO_EVAL || "shyplay_bateria_tiempo_general";
+
+    var ahora = Date.now();
+    var tiempoFin = localStorage.getItem(claveTiempoEval);
+
+    // Si no existe una marca de fin registrada (test nuevo), se calcula sumando los 1500 segundos (25 min)
+    if (!tiempoFin) {
+        tiempoFin = ahora + (tiempoTotalSegundosporDefecto * 1000);
+        localStorage.setItem(claveTiempoEval, tiempoFin);
     } else {
-        sessionStorage.setItem("shyplay_bateria_tiempo", tiempoTotalSegundos);
+        tiempoFin = parseInt(tiempoFin, 10);
     }
-
-    var elemTiempo = document.getElementById("tiempo");
 
     function actualizarReloj() {
-        var minutos = String(Math.floor(tiempoTotalSegundos / 60)).padStart(2, "0");
-        var segundos = String(tiempoTotalSegundos % 60).padStart(2, "0");
-        if (elemTiempo) elemTiempo.textContent = minutos + ":" + segundos;
+        var tiempoActual = Date.now();
+        var milisegundosRestantes = tiempoFin - tiempoActual;
+        var segundosRestantes = Math.floor(milisegundosRestantes / 1000);
 
-        sessionStorage.setItem("shyplay_bateria_tiempo", tiempoTotalSegundos);
-
-        if (tiempoTotalSegundos <= 0) {
-            alert("El tiempo de la prueba ha finalizado.");
-            sessionStorage.setItem("shyplay_bateria_tiempo_terminado", "true");
-            if (typeof finalizarBateria === "function") {
-                finalizarBateria();
-            }
-            return;
+        if (segundosRestantes <= 0) {
+            segundosRestantes = 0;
         }
 
-        tiempoTotalSegundos -= 1;
-        window.setTimeout(actualizarReloj, 1000);
+        var minutos = Math.floor(segundosRestantes / 60);
+        var segundos = segundosRestantes % 60;
+
+        elementoTiempo.textContent = (minutos < 10 ? "0" : "") + minutos + ":" + (segundos < 10 ? "0" : "") + segundos;
+
+        return segundosRestantes;
     }
 
-    // Arranca el conteo
-    actualizarReloj();
+    // Ejecutar de inmediato al cargar la vista
+    var segundosRestantes = actualizarReloj();
+
+    var intervalo = setInterval(function() {
+        segundosRestantes = actualizarReloj();
+
+        if (segundosRestantes <= 0) {
+            clearInterval(intervalo);
+            localStorage.removeItem(claveTiempoEval);
+            alert("¡El tiempo de la evaluación ha terminado!");
+            if (typeof window.finalizarBateria === "function") {
+                window.finalizarBateria();
+            } else {
+                window.location.href = "login.html";
+            }
+        }
+    }, 1000);
 };
