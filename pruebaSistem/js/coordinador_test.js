@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  //CARGA DINAMICA DE CANDIDATO Y COMBINACION de test
+  // CARGA DINAMICA DE CANDIDATO Y COMBINACION de test
   async function cargarCombinacionYArrancar() {
     mostrarCargando(true);
 
@@ -67,62 +67,65 @@ document.addEventListener("DOMContentLoaded", function () {
         contadorGlobal.textContent = (dataBusqueda.nombre ? (dataBusqueda.nombre + " " + dataBusqueda.apellido) : (sesion.usuario || "Aspirante")) + " (ID: " + idCandidatoReal + ")";
       }
 
-      // Consultar la combinación activa en la BD
-      const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/combinacion-activa?id_candidato=${idCandidatoReal}`);
+      // Consultar la combinacion activa en la BD
+            const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/combinacion-activa?id_candidato=${idCandidatoReal}`);
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Datos de combinación activa recibidos:", data);
+            if (response.ok) {
+              const data = await response.json();
+              console.log("Datos de combinación activa recibidos:", data);
 
-        if (data.encontrado && data.combinacion) {
-          combinacionActiva = data.combinacion.trim().toUpperCase();
+              if (data.encontrado && data.combinacion) {
+                combinacionActiva = data.combinacion.trim().toUpperCase();
 
-          // Capturar el ID de evaluación exacto devuelto por el backend
-          if (data.id_evaluacion) {
-            idEvaluacionActiva = data.id_evaluacion;
-          } else if (data.idEvaluacion) {
-            idEvaluacionActiva = data.idEvaluacion;
+                // Capturar el ID de evaluación exacto devuelto por el backend
+                if (data.id_evaluacion) {
+                  idEvaluacionActiva = data.id_evaluacion;
+                } else if (data.idEvaluacion) {
+                  idEvaluacionActiva = data.idEvaluacion;
+                }
+              }
+            }
+
+            // Fallback de seguridad estricto
+            if (!idEvaluacionActiva) {
+              console.warn("No se encontró id_evaluacion en la respuesta, usando idCandidatoReal como respaldo.");
+              idEvaluacionActiva = idCandidatoReal;
+            }
+
+            // Configurar llaves unicas por EVALUACIÓN
+            CLAVE_INDICE = "shyplay_bateria_indice_eval_" + idEvaluacionActiva;
+            CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_eval_" + idEvaluacionActiva;
+            window.CLAVE_TIEMPO_EVAL = "shyplay_bateria_tiempo_eval_" + idEvaluacionActiva;
+
+            // Cargar progreso previo de esta evaluación específica
+            window.indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
+            respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
+
+          } catch (e) {
+            console.error("Error al sincronizar con el servidor:", e);
+            idCandidatoReal = sesion.idCandidato || 1;
+            idEvaluacionActiva = idCandidatoReal;
+
+            CLAVE_INDICE = "shyplay_bateria_indice_eval_" + idCandidatoReal;
+            CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_eval_" + idCandidatoReal;
+            window.CLAVE_TIEMPO_EVAL = "shyplay_bateria_tiempo_eval_" + idCandidatoReal;
+
+            window.indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
+            respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
+          } finally {
+            // APAGAR EL SPINNER SIEMPRE (Ocurra éxito o error)
+            mostrarCargando(false);
           }
+
+          if (combinacionActiva.includes("AB") || combinacionActiva.includes("A+B")) {
+              combinacionActiva = "AB";
+            } else {
+              combinacionActiva = "AC";
+          }
+
+          console.log("-> ID Candidato Real:", idCandidatoReal, "| ID Evaluacion Activa:", idEvaluacionActiva, "| Combinación Definitiva:", combinacionActiva);
+          inicializarBateria();
         }
-      }
-
-      // Fallback de seguridad estricto
-      if (!idEvaluacionActiva) {
-        console.warn("No se encontró id_evaluacion en la respuesta, usando idCandidatoReal como respaldo.");
-        idEvaluacionActiva = idCandidatoReal;
-      }
-
-      // Configurar llaves unicas por EVALUACIÓN
-      CLAVE_INDICE = "shyplay_bateria_indice_eval_" + idEvaluacionActiva;
-      CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_eval_" + idEvaluacionActiva;
-      window.CLAVE_TIEMPO_EVAL = "shyplay_bateria_tiempo_eval_" + idEvaluacionActiva;
-
-      // Cargar progreso previo de esta evaluación específica
-      window.indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
-      respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
-
-    } catch (e) {
-      console.error("Error al sincronizar con el servidor:", e);
-      idCandidatoReal = sesion.idCandidato || 1;
-      idEvaluacionActiva = idCandidatoReal;
-
-      CLAVE_INDICE = "shyplay_bateria_indice_eval_" + idCandidatoReal;
-      CLAVE_RESPUESTAS = "shyplay_respuestas_parciales_eval_" + idCandidatoReal;
-      window.CLAVE_TIEMPO_EVAL = "shyplay_bateria_tiempo_eval_" + idCandidatoReal;
-
-      window.indiceGlobal = parseInt(localStorage.getItem(CLAVE_INDICE) || "0", 10);
-      respuestasGlobales = JSON.parse(localStorage.getItem(CLAVE_RESPUESTAS) || "{}");
-    }
-
-    if (combinacionActiva.includes("AB") || combinacionActiva.includes("A+B")) {
-        combinacionActiva = "AB";
-      } else {
-        combinacionActiva = "AC";
-    }
-
-    console.log("-> ID Candidato Real:", idCandidatoReal, "| ID Evaluacion Activa:", idEvaluacionActiva, "| Combinación Definitiva:", combinacionActiva);
-    inicializarBateria();
-  }
 
   function inicializarBateria() {
     if (combinacionActiva === "AB") {
@@ -330,7 +333,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     }
-
 
   //BOTON SIGUIENTE
   if (btnSiguiente) {

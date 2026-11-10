@@ -1,0 +1,27 @@
+
+    .reporte-contenedor { display: flex; flex-direction: column; gap: 24px; margin-top: 15px; }
+    .card-info-general { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .badge-combinacion { background: #e6f5fb; color: #0c74a0; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; }
+
+    .grid-pruebas { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .card-prueba { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid #15a0cc; }
+    .card-prueba h3 { margin: 0 0 15px 0; font-size: 1.1rem; color: #333; font-family: 'Montserrat', sans-serif; }
+
+    .tabla-metricas { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .tabla-metricas th, .tabla-metricas td { padding: 8px 10px; text-align: left; font-size: 0.95rem; border-bottom: 1px solid #eee; }
+    .tabla-metricas th { color: #666; font-weight: 600; }
+    .tabla-metricas td { color: #222; font-weight: 700; text-align: right; }
+
+    .card-combinado { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .combinado-detalles { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px 18px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+
+    .buscador-candidato { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+    .buscador-candidato input { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; width: 320px; outline: none; }
+    .buscador-candidato button { background: #15a0cc; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .buscador-candidato button:hover { background: #0c74a0; }
+
+    .historial-lista { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+    .item-historial { background: #fff; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: all 0.2s; }
+    .item-historial:hover { border-color: #15a0cc; transform: translateY(-1px); }
+    .btn-ver-reporte { background: #0c74a0; color: #white; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .btn-ver-reporte:hover { background: #095878; }
