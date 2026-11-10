@@ -8,6 +8,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const seccionBateria = document.getElementById("seccion-bateria");
     const formAsignar = document.getElementById("form-asignar-prueba");
     const selectBateria = document.getElementById("select-bateria");
+    const modalCargando = document.getElementById("modal-cargando"); // Asegúrate de tener este elemento en tu HTML
+
+    function mostrarCargando(mostrar) {
+        if (modalCargando) {
+            modalCargando.style.display = mostrar ? "flex" : "none";
+        }
+    }
 
     // Obtener el nombre del evaluador desde la sesión actual (o dejar "Admin" por defecto)
     let sesion = null;
@@ -18,41 +25,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const nombreEvaluador = sesion && sesion.usuario ? sesion.usuario : "Admin";
 
-    //EVENTO BUSCAR CANDIDATO (GET /api/evaluacion/buscar)
-    btnBuscar.addEventListener("click", async () => {
-        const correo = inputCorreo.value.trim();
-        if (!correo) {
-            alert("Por favor, ingresa un correo electrónico.");
-            return;
-        }
-
-        try {
-            const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/buscar?correo=${encodeURIComponent(correo)}`);
-            const data = await response.json();
-
-            if (data.encontrado) {
-                lblNombre.textContent = `${data.nombre} ${data.apellido}`;
-                lblCorreo.textContent = data.correo;
-                inputIdCandidato.value = data.id_candidato;
-
-                divInfoCandidato.style.display = "block";
-
-                // Activar la sección de la batería de pruebas
-                seccionBateria.style.opacity = "1";
-                seccionBateria.style.pointerEvents = "auto";
-            } else {
-                alert("Candidato no encontrado con ese correo.");
-                divInfoCandidato.style.display = "none";
-                seccionBateria.style.opacity = "0.5";
-                seccionBateria.style.pointerEvents = "none";
+    // EVENTO BUSCAR CANDIDATO (GET /api/evaluacion/buscar)
+        btnBuscar.addEventListener("click", async () => {
+            const correo = inputCorreo.value.trim();
+            if (!correo) {
+                alert("Por favor, ingresa un correo electrónico.");
+                return;
             }
-        } catch (error) {
-            console.error("Error al buscar candidato:", error);
-            alert("Error de conexión con el servidor backend.");
-        }
-    });
 
-    //EVENTO ASIGNAR Y GUARDAR (POST /api/evaluacion/asignar)
+            // 1. MOSTRAR EL SPINNER AQUÍ
+            const modalCargando = document.getElementById("modal-cargando");
+            if (modalCargando) modalCargando.style.display = "flex";
+
+            try {
+                const response = await fetch(`https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/buscar?correo=${encodeURIComponent(correo)}`);
+                const data = await response.json();
+
+                if (data.encontrado) {
+                    lblNombre.textContent = `${data.nombre} ${data.apellido}`;
+                    lblCorreo.textContent = data.correo;
+                    inputIdCandidato.value = data.id_candidato;
+
+                    divInfoCandidato.style.display = "block";
+
+                    // Activar la sección de la batería de pruebas
+                    seccionBateria.style.opacity = "1";
+                    seccionBateria.style.pointerEvents = "auto";
+                } else {
+                    alert("Candidato no encontrado con ese correo.");
+                    divInfoCandidato.style.display = "none";
+                    seccionBateria.style.opacity = "0.5";
+                    seccionBateria.style.pointerEvents = "none";
+                }
+            } catch (error) {
+                console.error("Error al buscar candidato:", error);
+                alert("Error de conexión con el servidor backend.");
+            } finally {
+                //OCULTAR EL SPINNER AL TERMINAR (ÉXITO O ERROR)
+                if (modalCargando) modalCargando.style.display = "none";
+            }
+        });
+
+    // EVENTO ASIGNAR Y GUARDAR (POST /api/evaluacion/asignar)
     formAsignar.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -70,6 +84,8 @@ document.addEventListener("DOMContentLoaded", () => {
             nombre_evaluador: nombreEvaluador
         };
 
+        mostrarCargando(true);
+
         try {
             const response = await fetch("https://sistema-psicometrico-back-7.onrender.com/api/evaluacion/asignar", {
                 method: "POST",
@@ -82,23 +98,24 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
 
             if (data.exito) {
-                            alert("¡Evaluación programada correctamente!");
+                alert("¡Evaluación programada correctamente!");
 
-                            // >>> ¡AQUÍ ESTABA EL DETALLE! Guardar en el sessionStorage la combinación elegida <<<
-                            sessionStorage.setItem("shyplay_bateria_combinacion", combinacion);
+                sessionStorage.setItem("shyplay_bateria_combinacion", combinacion);
 
-                            // Limpiar formulario o recargar
-                            formAsignar.reset();
-                            divInfoCandidato.style.display = "none";
-                            inputCorreo.value = "";
-                            seccionBateria.style.opacity = "0.5";
-                            seccionBateria.style.pointerEvents = "none";
-                        } else {
+                // Limpiar formulario o recargar
+                formAsignar.reset();
+                divInfoCandidato.style.display = "none";
+                inputCorreo.value = "";
+                seccionBateria.style.opacity = "0.5";
+                seccionBateria.style.pointerEvents = "none";
+            } else {
                 alert("Error al guardar: " + (data.mensaje || "Desconocido"));
             }
         } catch (error) {
             console.error("Error al asignar evaluación:", error);
             alert("Error de conexión al intentar guardar la evaluación.");
+        } finally {
+            mostrarCargando(false);
         }
     });
 });
